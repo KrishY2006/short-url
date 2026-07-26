@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./db");
+const urlRoutes = require("./routes/urlRoutes");
 
 const app = express();
 
@@ -14,6 +15,9 @@ app.use(express.json());
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
+
+// URL routes
+app.use("/api/url", urlRoutes);
 
 // Read port from env, default to 4000
 const PORT = process.env.PORT || 4000;
