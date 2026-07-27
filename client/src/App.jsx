@@ -1,7 +1,31 @@
 import { useState } from "react";
+import api from "./api/client";
 
 function App() {
-  const [url, setUrl] = useState("");
+  const [originalUrl, setOriginalUrl] = useState("");
+  const [shortUrl, setShortUrl] = useState("");
+
+  // Handle the shorten button click
+  const handleShorten = async () => {
+    // Validate that the input is not empty
+    if (!originalUrl.trim()) {
+      alert("Please enter a URL to shorten.");
+      return;
+    }
+
+    try {
+      // Send POST request to the backend
+      const response = await api.post("/url/shorten", { originalUrl });
+
+      // Save the returned short URL into state
+      setShortUrl(response.data.shortUrl);
+    } catch (error) {
+      // Show the backend error message, or a fallback
+      const message =
+        error.response?.data?.error || "Something went wrong.";
+      alert(message);
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -11,18 +35,18 @@ function App() {
         <input
           type="text"
           placeholder="Paste your long URL here..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          value={originalUrl}
+          onChange={(e) => setOriginalUrl(e.target.value)}
           style={styles.input}
         />
 
-        <button style={styles.button}>
+        <button style={styles.button} onClick={handleShorten}>
           Shorten URL
         </button>
 
         <div style={styles.result}>
           <h3>Short URL</h3>
-          <p>No URL generated yet.</p>
+          {shortUrl ? <p>{shortUrl}</p> : <p>No URL generated yet.</p>}
         </div>
       </div>
     </div>
