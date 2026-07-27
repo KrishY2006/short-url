@@ -127,4 +127,50 @@ const getUrlStats = async (req, res) => {
   }
 };
 
-module.exports = { shortenUrl, redirectUrl, getUrlStats };
+// Fetch all URL documents, sorted by newest first
+const getAllUrls = async (req, res) => {
+  try {
+    // Query all documents and sort by createdAt in descending order
+    const urls = await Url.find().sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: urls,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Server error",
+    });
+  }
+};
+
+// Delete a URL document by its short code
+const deleteUrl = async (req, res) => {
+  try {
+    const { shortCode } = req.params;
+
+    // Find and delete the matching document
+    const deleted = await Url.findOneAndDelete({ shortCode });
+
+    // Return 404 if no matching document exists
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        error: "Short URL not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "URL deleted successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Server error",
+    });
+  }
+};
+
+module.exports = { shortenUrl, redirectUrl, getUrlStats, getAllUrls, deleteUrl };
