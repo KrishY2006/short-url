@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./db");
 const urlRoutes = require("./routes/urlRoutes");
+const { redirectUrl } = require("./controllers/urlController");
 
 const app = express();
 
@@ -18,6 +19,9 @@ app.get("/api/health", (_req, res) => {
 
 // URL routes
 app.use("/api/url", urlRoutes);
+
+// Short URL redirect (clean URL support)
+app.get("/:shortCode", redirectUrl);
 
 // Read port from env, default to 4000
 const PORT = process.env.PORT || 4000;

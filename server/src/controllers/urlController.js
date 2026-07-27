@@ -34,4 +34,34 @@ const shortenUrl = async (req, res) => {
   }
 };
 
-module.exports = { shortenUrl };
+// Redirect to the original URL and track the click
+const redirectUrl = async (req, res) => {
+  try {
+    const { shortCode } = req.params;
+
+    // Find the URL document matching the short code
+    const url = await Url.findOne({ shortCode });
+
+    // Return 404 if no matching document exists
+    if (!url) {
+      return res.status(404).json({
+        success: false,
+        error: "Short URL not found",
+      });
+    }
+
+    // Increment click count and persist the change
+    url.clicks += 1;
+    await url.save();
+
+    // Redirect the user to the original URL
+    return res.redirect(url.originalUrl);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Server error",
+    });
+  }
+};
+
+module.exports = { shortenUrl, redirectUrl };
