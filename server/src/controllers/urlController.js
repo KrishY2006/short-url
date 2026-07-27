@@ -93,4 +93,38 @@ const redirectUrl = async (req, res) => {
   }
 };
 
-module.exports = { shortenUrl, redirectUrl };
+// Return statistics for a short URL
+const getUrlStats = async (req, res) => {
+  try {
+    const { shortCode } = req.params;
+
+    // Find the URL document matching the short code
+    const url = await Url.findOne({ shortCode });
+
+    // Return 404 if no matching document exists
+    if (!url) {
+      return res.status(404).json({
+        success: false,
+        error: "Short URL not found",
+      });
+    }
+
+    // Return the URL statistics
+    return res.status(200).json({
+      success: true,
+      data: {
+        originalUrl: url.originalUrl,
+        shortCode: url.shortCode,
+        clicks: url.clicks,
+        createdAt: url.createdAt,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Server error",
+    });
+  }
+};
+
+module.exports = { shortenUrl, redirectUrl, getUrlStats };
