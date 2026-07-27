@@ -4,11 +4,40 @@ const shortenUrl = async (req, res) => {
   try {
     const { originalUrl } = req.body;
 
-    // Validate that originalUrl is provided
+    // Return 400 if originalUrl is missing
     if (!originalUrl) {
       return res.status(400).json({
         success: false,
         error: "Please provide an original URL",
+      });
+    }
+
+    // Validate that originalUrl is a well-formed HTTP/HTTPS URL
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(originalUrl);
+    } catch {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid URL",
+      });
+    }
+
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid URL",
+      });
+    }
+
+    // Check if this URL has already been shortened
+    const existing = await Url.findOne({ originalUrl });
+    if (existing) {
+      return res.status(200).json({
+        success: true,
+        originalUrl: existing.originalUrl,
+        shortCode: existing.shortCode,
+        shortUrl: `${process.env.BASE_URL}/${existing.shortCode}`,
       });
     }
 
