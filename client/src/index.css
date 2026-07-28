@@ -119,3 +119,106 @@ code {
   font-weight: 500;
   color: var(--text-h);
 }
+
+/* ============================================
+   URL Shortener – UI/UX helper classes
+   ============================================ */
+
+/* Primary button (Shorten, Copy URL, etc.) */
+.btn-primary {
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.btn-primary:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Copy button */
+.btn-copy {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+.btn-copy:hover {
+  background-color: #059669;
+  transform: scale(1.05);
+}
+.btn-copy:active {
+  transform: scale(0.97);
+}
+
+/* Table action buttons (shared transition) */
+.btn-table {
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.btn-table:hover {
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.btn-table:active {
+  transform: scale(0.95);
+}
+
+/* Input focus ring */
+.input-focus {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input-focus:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+/* Modal button transitions */
+.btn-modal {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+.btn-modal:hover {
+  transform: scale(1.05);
+}
+.btn-modal:active {
+  transform: scale(0.97);
+}
+
+/* Spinner animation */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+
+.spinner-dark {
+  border-color: rgba(37, 99, 235, 0.2);
+  border-top-color: #2563eb;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Empty state icon pulse */
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 12px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.7; }
+}

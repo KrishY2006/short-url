@@ -168,27 +168,37 @@ function App() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h1>🔗 URL Shortener</h1>
+        <h1 style={styles.title}>🔗 URL Shortener</h1>
 
+        {/* URL Input */}
         <input
           type="text"
           placeholder="Paste your long URL here..."
           value={originalUrl}
           onChange={(e) => setOriginalUrl(e.target.value)}
           style={styles.input}
+          className="input-focus"
         />
 
+        {/* Shorten button with spinner */}
         <button
           style={styles.button}
+          className="btn-primary"
           onClick={handleShorten}
           disabled={loading}
         >
-          {/* Show "Shortening..." while the request is in progress */}
-          {loading ? "Shortening..." : "Shorten URL"}
+          {loading ? (
+            <>
+              <span className="spinner"></span> Shortening...
+            </>
+          ) : (
+            "Shorten URL"
+          )}
         </button>
 
+        {/* Short URL result section */}
         <div style={styles.result}>
-          <h3>Short URL</h3>
+          <h3 style={styles.sectionTitle}>Short URL</h3>
           {shortUrl ? (
             <p>
               <a href={shortUrl} target="_blank" rel="noopener noreferrer">
@@ -196,12 +206,16 @@ function App() {
               </a>
             </p>
           ) : (
-            <p>No URL generated yet.</p>
+            <p style={{ color: "#9ca3af" }}>No URL generated yet.</p>
           )}
 
           {/* Copy button - only visible when a short URL exists */}
           {shortUrl && (
-            <button style={styles.copyButton} onClick={handleCopy}>
+            <button
+              style={styles.copyButton}
+              className="btn-copy"
+              onClick={handleCopy}
+            >
               Copy URL
             </button>
           )}
@@ -213,89 +227,136 @@ function App() {
         {/* Analytics section - shown after a short URL is generated */}
         {shortUrl && (
           <div style={styles.analytics}>
-            <h3>Analytics</h3>
+            <h3 style={styles.sectionTitle}>Analytics</h3>
 
-            {/* Show loading message while fetching stats */}
-            {loadingStats && <p>Loading analytics...</p>}
+            {/* Show spinner while fetching stats */}
+            {loadingStats && (
+              <div style={styles.loadingContainer}>
+                <span className="spinner spinner-dark"></span>
+              </div>
+            )}
 
-            {/* Show analytics data once loaded */}
+            {/* Show analytics data as individual info cards */}
             {!loadingStats && stats && (
-              <>
-                <p>
-                  <strong>Original URL:</strong> {stats.originalUrl}
-                </p>
-                <p>
-                  <strong>Click Count:</strong> {stats.clicks}
-                </p>
-                <p>
-                  <strong>Created Date:</strong>{" "}
-                  {new Date(stats.createdAt).toLocaleString()}
-                </p>
-              </>
+              <div style={styles.analyticsGrid}>
+                {/* Original URL card */}
+                <div style={styles.infoCard}>
+                  <span style={styles.infoCardLabel}>Original URL</span>
+                  <span style={styles.infoCardValue}>
+                    {stats.originalUrl.length > 40
+                      ? stats.originalUrl.substring(0, 40) + "..."
+                      : stats.originalUrl}
+                  </span>
+                </div>
+                {/* Click Count card */}
+                <div style={styles.infoCard}>
+                  <span style={styles.infoCardLabel}>Click Count</span>
+                  <span style={styles.infoCardValueLarge}>{stats.clicks}</span>
+                </div>
+                {/* Created Date card */}
+                <div style={styles.infoCard}>
+                  <span style={styles.infoCardLabel}>Created Date</span>
+                  <span style={styles.infoCardValue}>
+                    {new Date(stats.createdAt).toLocaleString()}
+                  </span>
+                </div>
+              </div>
             )}
           </div>
         )}
 
         {/* All Shortened URLs dashboard section */}
         <div style={styles.dashboard}>
-          <h3>All Shortened URLs</h3>
+          <h3 style={styles.sectionTitle}>All Shortened URLs</h3>
 
-          {/* Show message if no URLs exist */}
+          {/* Show empty state if no URLs exist */}
           {urls.length === 0 ? (
-            <p>No URLs found.</p>
+            <div style={styles.emptyState}>
+              <div className="empty-icon">🔗</div>
+              <p style={styles.emptyTitle}>No shortened URLs yet.</p>
+              <p style={styles.emptySubtitle}>Create your first one!</p>
+            </div>
           ) : (
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Short Code</th>
-                  <th style={styles.th}>Original URL</th>
-                  <th style={styles.th}>Clicks</th>
-                  <th style={styles.th}>QR</th>
-                  <th style={styles.th}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {urls.map((url) => (
-                  <tr key={url._id}>
-                    <td style={styles.td}>{url.shortCode}</td>
-                    <td style={styles.td}>{url.originalUrl}</td>
-                    <td style={styles.td}>{url.clicks}</td>
-                    {/* QR column - button to open the QR modal */}
-                    <td style={styles.td}>
-                      <button
-                        style={styles.tableQRButton}
-                        onClick={() => handleShowQR(url.shortCode, url.originalUrl)}
-                      >
-                        Show QR
-                      </button>
-                    </td>
-                    {/* Actions column - copy and delete */}
-                    <td style={styles.td}>
-                      {/* Copy button for this row */}
-                      <button
-                        style={styles.tableCopyButton}
-                        onClick={() => handleTableCopy(url.shortCode)}
-                      >
-                        Copy
-                      </button>
-                      {/* Delete button for this row */}
-                      <button
-                        style={styles.tableDeleteButton}
-                        onClick={() => handleDelete(url.shortCode)}
-                      >
-                        Delete
-                      </button>
-                      {/* Show "Copied!" message next to the buttons */}
-                      {tableCopyMessage && (
-                        <span style={styles.tableCopyFeedback}>
-                          {tableCopyMessage}
-                        </span>
-                      )}
-                    </td>
+            /* Scrollable table wrapper for responsive layout */
+            <div style={styles.tableWrapper}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Short Code</th>
+                    <th style={styles.th}>Original URL</th>
+                    <th style={styles.th}>Clicks</th>
+                    <th style={styles.th}>QR</th>
+                    <th style={styles.th}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {urls.map((url) => (
+                    <tr key={url._id}>
+                      <td style={styles.td}>
+                        <a
+                          href={`http://localhost:4000/${url.shortCode}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={styles.urlLink}
+                        >
+                          {url.shortCode}
+                        </a>
+                      </td>
+                      <td style={styles.td}>
+                        <a
+                          href={url.originalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={styles.urlLink}
+                        >
+                          {url.originalUrl.length > 35
+                            ? url.originalUrl.substring(0, 35) + "..."
+                            : url.originalUrl}
+                        </a>
+                      </td>
+                      <td style={styles.td}>{url.clicks}</td>
+                      {/* QR column - button to open the QR modal */}
+                      <td style={styles.td}>
+                        <button
+                          style={styles.tableQRButton}
+                          className="btn-table"
+                          onClick={() =>
+                            handleShowQR(url.shortCode, url.originalUrl)
+                          }
+                        >
+                          Show QR
+                        </button>
+                      </td>
+                      {/* Actions column - copy and delete */}
+                      <td style={styles.td}>
+                        {/* Copy button for this row */}
+                        <button
+                          style={styles.tableCopyButton}
+                          className="btn-table"
+                          onClick={() => handleTableCopy(url.shortCode)}
+                        >
+                          Copy
+                        </button>
+                        {/* Delete button for this row */}
+                        <button
+                          style={styles.tableDeleteButton}
+                          className="btn-table"
+                          onClick={() => handleDelete(url.shortCode)}
+                        >
+                          Delete
+                        </button>
+                        {/* Show "Copied!" message next to the buttons */}
+                        {tableCopyMessage && (
+                          <span style={styles.tableCopyFeedback}>
+                            {tableCopyMessage}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
@@ -329,12 +390,20 @@ function App() {
             </p>
 
             {/* Download the QR code as a PNG file named <shortCode>.png */}
-            <button style={styles.downloadButton} onClick={handleDownloadQR}>
+            <button
+              style={styles.downloadButton}
+              className="btn-modal"
+              onClick={handleDownloadQR}
+            >
               Download QR
             </button>
 
             {/* Close the modal */}
-            <button style={styles.closeButton} onClick={handleCloseQR}>
+            <button
+              style={styles.closeButton}
+              className="btn-modal"
+              onClick={handleCloseQR}
+            >
               Close
             </button>
           </div>
@@ -345,66 +414,98 @@ function App() {
 }
 
 const styles = {
+  // Page wrapper – responsive padding, centered layout
   container: {
     backgroundColor: "#f4f6f8",
     minHeight: "100vh",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
-    fontFamily: "Arial, sans-serif",
-  },
-
-  card: {
-    background: "#fff",
-    padding: "30px",
-    borderRadius: "12px",
-    width: "450px",
-    boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-    textAlign: "center",
-  },
-
-  input: {
-    width: "100%",
-    padding: "12px",
-    marginTop: "20px",
-    marginBottom: "20px",
-    fontSize: "16px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
+    alignItems: "flex-start",
+    fontFamily: "'Segoe UI', Arial, sans-serif",
+    padding: "40px 16px",
     boxSizing: "border-box",
   },
 
+  // Main card – wider, rounder, deeper shadow
+  card: {
+    background: "#fff",
+    padding: "40px",
+    borderRadius: "20px",
+    width: "100%",
+    maxWidth: "900px",
+    boxShadow:
+      "0 4px 6px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.08)",
+    textAlign: "center",
+  },
+
+  // Page heading
+  title: {
+    margin: "0 0 28px",
+    fontSize: "32px",
+    letterSpacing: "-0.5px",
+  },
+
+  // Shared section title inside the card
+  sectionTitle: {
+    fontSize: "18px",
+    fontWeight: 600,
+    margin: "0 0 12px",
+    color: "#1f2937",
+  },
+
+  // URL input field
+  input: {
+    width: "100%",
+    padding: "14px 16px",
+    marginBottom: "16px",
+    fontSize: "16px",
+    borderRadius: "12px",
+    border: "1.5px solid #d1d5db",
+    boxSizing: "border-box",
+    backgroundColor: "#f9fafb",
+  },
+
+  // Primary action button (Shorten)
   button: {
     width: "100%",
-    padding: "12px",
+    padding: "14px",
     fontSize: "16px",
+    fontWeight: 600,
     backgroundColor: "#2563eb",
     color: "white",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "12px",
     cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    height: "48px",
   },
 
+  // Short URL result box
   result: {
-    marginTop: "30px",
-    padding: "15px",
+    marginTop: "28px",
+    padding: "20px",
     background: "#f9fafb",
-    borderRadius: "8px",
+    borderRadius: "12px",
   },
 
-  // Copy button style
+  // Copy button (green)
   copyButton: {
-    marginTop: "10px",
-    padding: "8px 16px",
+    marginTop: "12px",
+    padding: "10px 20px",
     fontSize: "14px",
+    fontWeight: 600,
     backgroundColor: "#10b981",
     color: "white",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
+    height: "40px",
   },
 
-  // Copy feedback message style
+  // Copy feedback text
   copyMessage: {
     marginTop: "10px",
     fontSize: "14px",
@@ -412,70 +513,160 @@ const styles = {
     fontWeight: "bold",
   },
 
-  // Analytics section style
+  // Analytics section container
   analytics: {
-    marginTop: "20px",
-    padding: "15px",
+    marginTop: "24px",
+    padding: "20px",
     background: "#f9fafb",
-    borderRadius: "8px",
+    borderRadius: "12px",
     textAlign: "left",
   },
 
-  // Dashboard section style
+  // Grid layout for analytics info cards
+  analyticsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "12px",
+  },
+
+  // Individual analytics info card
+  infoCard: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+    padding: "14px 16px",
+    background: "#fff",
+    borderRadius: "10px",
+    border: "1px solid #e5e7eb",
+  },
+
+  // Label inside info card
+  infoCardLabel: {
+    fontSize: "12px",
+    fontWeight: 600,
+    color: "#6b7280",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
+
+  // Value inside info card
+  infoCardValue: {
+    fontSize: "14px",
+    color: "#1f2937",
+    wordBreak: "break-all",
+  },
+
+  // Large numeric value (click count)
+  infoCardValueLarge: {
+    fontSize: "28px",
+    fontWeight: 700,
+    color: "#2563eb",
+  },
+
+  // Spinner loading container
+  loadingContainer: {
+    display: "flex",
+    justifyContent: "center",
+    padding: "20px 0",
+  },
+
+  // Dashboard section
   dashboard: {
-    marginTop: "20px",
-    padding: "15px",
+    marginTop: "24px",
+    padding: "20px",
     background: "#f9fafb",
-    borderRadius: "8px",
+    borderRadius: "12px",
     textAlign: "left",
   },
 
-  // Table style
+  // Empty state container
+  emptyState: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "40px 20px",
+    color: "#9ca3af",
+  },
+
+  // Empty state title text
+  emptyTitle: {
+    fontSize: "18px",
+    fontWeight: 600,
+    color: "#6b7280",
+    margin: "0 0 4px",
+  },
+
+  // Empty state subtitle text
+  emptySubtitle: {
+    fontSize: "14px",
+    color: "#9ca3af",
+    margin: 0,
+  },
+
+  // Scrollable wrapper around the table
+  tableWrapper: {
+    overflowX: "auto",
+    marginTop: "10px",
+    borderRadius: "8px",
+  },
+
+  // Table element
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    marginTop: "10px",
+    minWidth: "580px",
   },
 
-  // Table header cell style
+  // Table header cell
   th: {
     borderBottom: "2px solid #d1d5db",
-    padding: "8px",
+    padding: "10px 12px",
     textAlign: "left",
-    fontSize: "14px",
+    fontSize: "13px",
+    fontWeight: 600,
+    color: "#6b7280",
+    textTransform: "uppercase",
+    letterSpacing: "0.4px",
+    whiteSpace: "nowrap",
   },
 
-  // Table data cell style
+  // Table data cell
   td: {
     borderBottom: "1px solid #e5e7eb",
-    padding: "8px",
+    padding: "12px",
     fontSize: "13px",
+    verticalAlign: "middle",
   },
 
-  // Table copy button style
+  // Table copy button (blue)
   tableCopyButton: {
-    padding: "4px 8px",
+    padding: "6px 10px",
     fontSize: "12px",
+    fontWeight: 600,
     backgroundColor: "#2563eb",
     color: "white",
     border: "none",
-    borderRadius: "4px",
+    borderRadius: "6px",
     cursor: "pointer",
     marginRight: "6px",
+    height: "30px",
   },
 
-  // Table delete button style
+  // Table delete button (red)
   tableDeleteButton: {
-    padding: "4px 8px",
+    padding: "6px 10px",
     fontSize: "12px",
+    fontWeight: 600,
     backgroundColor: "#ef4444",
     color: "white",
     border: "none",
-    borderRadius: "4px",
+    borderRadius: "6px",
     cursor: "pointer",
+    height: "30px",
   },
 
-  // Table copy feedback message style
+  // Table copy feedback message
   tableCopyFeedback: {
     marginLeft: "8px",
     fontSize: "12px",
@@ -483,16 +674,17 @@ const styles = {
     fontWeight: "bold",
   },
 
-  // QR button style for each table row
+  // QR button style for each table row (purple)
   tableQRButton: {
-    padding: "4px 8px",
+    padding: "6px 10px",
     fontSize: "12px",
+    fontWeight: 600,
     backgroundColor: "#8b5cf6",
     color: "white",
     border: "none",
-    borderRadius: "4px",
+    borderRadius: "6px",
     cursor: "pointer",
-    marginLeft: "6px",
+    height: "30px",
   },
 
   // Modal overlay (dark backdrop)
@@ -507,16 +699,18 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
+    padding: "16px",
   },
 
   // Modal card
   modal: {
     background: "#fff",
     padding: "30px",
-    borderRadius: "12px",
+    borderRadius: "16px",
     boxShadow: "0 5px 20px rgba(0,0,0,0.3)",
     textAlign: "center",
     minWidth: "280px",
+    maxWidth: "90vw",
   },
 
   // QR code container
@@ -535,25 +729,36 @@ const styles = {
 
   // Download QR button style
   downloadButton: {
-    padding: "8px 16px",
+    padding: "10px 18px",
     fontSize: "14px",
+    fontWeight: 600,
     backgroundColor: "#2563eb",
     color: "white",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
     marginRight: "10px",
+    height: "40px",
+  },
+
+  // Reusable link style for clickable URLs
+  urlLink: {
+    color: "#2563eb",
+    textDecoration: "none",
+    wordBreak: "break-all",
   },
 
   // Close button style
   closeButton: {
-    padding: "8px 16px",
+    padding: "10px 18px",
     fontSize: "14px",
+    fontWeight: 600,
     backgroundColor: "#6b7280",
     color: "white",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
+    height: "40px",
   },
 };
 
