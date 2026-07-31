@@ -4,6 +4,8 @@ import api from "./api/client";
 
 function App() {
   const [originalUrl, setOriginalUrl] = useState("");
+  const [customAlias, setCustomAlias] = useState("");
+  const [customDomain, setCustomDomain] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
   const [stats, setStats] = useState(null);
@@ -31,7 +33,11 @@ function App() {
 
     try {
       // Send POST request to the backend
-      const response = await api.post("/url/shorten", { originalUrl });
+      const response = await api.post("/url/shorten", {
+        originalUrl,
+        customAlias,
+        customDomain,
+      });
 
       // Save the returned short URL into state
       setShortUrl(response.data.shortUrl);
@@ -176,6 +182,26 @@ function App() {
           placeholder="Paste your long URL here..."
           value={originalUrl}
           onChange={(e) => setOriginalUrl(e.target.value)}
+          style={styles.input}
+          className="input-focus"
+        />
+
+        {/* Custom Domain Input */}
+        <input
+          type="text"
+          placeholder="Custom Domain (Optional)"
+          value={customDomain}
+          onChange={(e) => setCustomDomain(e.target.value)}
+          style={styles.input}
+          className="input-focus"
+        />
+
+        {/* Custom Alias Input */}
+        <input
+          type="text"
+          placeholder="Custom Alias (Optional)"
+          value={customAlias}
+          onChange={(e) => setCustomAlias(e.target.value)}
           style={styles.input}
           className="input-focus"
         />

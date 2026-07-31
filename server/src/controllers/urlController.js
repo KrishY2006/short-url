@@ -2,7 +2,13 @@ const Url = require("../models/Url");
 
 const shortenUrl = async (req, res) => {
   try {
-    const { originalUrl } = req.body;
+    const { originalUrl, customAlias, customDomain } = req.body;
+
+    // Determine the base URL to use for the short URL response
+    const baseUrl =
+      customDomain && customDomain.trim() !== ""
+        ? customDomain.trim()
+        : process.env.BASE_URL;
 
     // Return 400 if originalUrl is missing
     if (!originalUrl) {
@@ -37,13 +43,38 @@ const shortenUrl = async (req, res) => {
         success: true,
         originalUrl: existing.originalUrl,
         shortCode: existing.shortCode,
-        shortUrl: `${process.env.BASE_URL}/${existing.shortCode}`,
+        shortUrl: `${baseUrl}/${existing.shortCode}`,
       });
     }
 
-    // nanoid v6 is ESM-only, so use dynamic import in CommonJS
-    const { nanoid } = await import("nanoid");
-    const shortCode = nanoid(6);
+    let shortCode;
+
+    if (customAlias && customAlias.trim() !== "") {
+      // Validate that the alias uses only allowed characters and has a valid length
+      const alias = customAlias.trim();
+      const aliasPattern = /^[a-zA-Z0-9_-]{3,30}$/;
+      if (!aliasPattern.test(alias)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid custom alias. Use 3-30 letters, numbers, hyphens or underscores only.",
+        });
+      }
+
+      // Return 400 if the custom alias is already taken
+      const aliasExists = await Url.findOne({ shortCode: alias });
+      if (aliasExists) {
+        return res.status(400).json({
+          success: false,
+          error: "Custom alias already exists",
+        });
+      }
+
+      shortCode = alias;
+    } else {
+      // nanoid v6 is ESM-only, so use dynamic import in CommonJS
+      const { nanoid } = await import("nanoid");
+      shortCode = nanoid(6);
+    }
 
     // Create and save the new URL document
     const url = new Url({ originalUrl, shortCode });
@@ -53,7 +84,7 @@ const shortenUrl = async (req, res) => {
       success: true,
       originalUrl,
       shortCode,
-      shortUrl: `${process.env.BASE_URL}/${shortCode}`,
+      shortUrl: `${baseUrl}/${shortCode}`,
     });
   } catch (error) {
     return res.status(500).json({
